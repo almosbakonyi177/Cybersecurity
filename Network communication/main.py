@@ -1,6 +1,6 @@
-from Packet import Packet
-data_packet=Packet("Try out!","192.168.0.0","10.0.0.5")
-data_packet.addHeader("80")
-data_packet.addHeader("00:1A:2H:3K:4D:5E")
+from Device import Device
 
-print(data_packet.packet_read())
+device = Device("192.00.15","1A:2B:3C")
+dataPacket=device.send("Tryout","00.198.00.11", "401", "102")
+
+print(dataPacket.packet_read())

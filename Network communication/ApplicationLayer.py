@@ -1,7 +1,7 @@
-class ApplicationLayer:
-    def __init__(self, message):
-        self.message=message
+from Packet import Packet
+from Layer import Layer
 
-    #Creates the body of the data packet
-    def addData(self):
-        return Packet()
+class ApplicationLayer(Layer):
+    def addData(self, packet) -> Packet:
+        packetBody = packet.message
+        return packet
