@@ -6,9 +6,9 @@ class InternetLayer(Layer):
         self.sourceIP=sourceIP
         self.destinationIP=destinationIP
     
-    #Adds the IP addresses to the package header
+    # Adds the IP addresses to the package header
     def addData(self, packet) -> Packet:
-        packet.addHeader(self.sourceIP)
-        packet.addHeader(self.destinationIP)
+        packet.addHeader("Source IP", self.sourceIP)
+        packet.addHeader("Destination IP", self.destinationIP)
 
         return packet

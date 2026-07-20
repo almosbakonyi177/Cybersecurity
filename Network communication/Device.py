@@ -1,6 +1,6 @@
 from Packet import Packet
 from ApplicationLayer import ApplicationLayer
-from TransportLayer import TransportLayer
+from TransportationLayer import TransportationLayer
 from InternetLayer import InternetLayer
 from NetworkAccessLayer import NetworkAccessLayer
 
@@ -13,10 +13,12 @@ class Device:
         packet = Packet(message)
 
         layers=[ApplicationLayer(),
-                TransportLayer(sourcePort, destinationPort),
+                TransportationLayer(sourcePort, destinationPort),
                 InternetLayer(self.IPaddess, destinationIP),
                 NetworkAccessLayer(self.macAddress)]
         
+        # Goes through on all layers and each layer adds its own part
+        # to the data packet
         for layer in layers:
             packet=layer.addData(packet)
 

@@ -3,9 +3,9 @@ class Packet:
         self.message=message
         self.header=[]
 
-    def addHeader(self, newHeader):
+    def addHeader(self, headerType, newHeader):
         self.header.append(newHeader)
-        print(f"Header added {newHeader}")
+        print(f"{headerType} added: {newHeader}")
     
     def packet_read(self):
-        return f"Header:[{self.header}\nBody:{self.message}"
+        return f"Header: {self.header}\nBody:'{self.message}'"
