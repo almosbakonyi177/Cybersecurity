@@ -1,4 +1,5 @@
 import socket
+import time
 
 
 def isConnected(sock:socket.socket)->bool:
@@ -11,7 +12,9 @@ clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print("Connecting to server, type END to exit\n")
 clientSocket.connect(('127.0.0.1', 6500))
 
-clientSocket.sendall(b"SECRET")
+timePeriod=time.time()//30
+
+clientSocket.sendall(str(timePeriod).encode('utf-8'))
 
 server_response = clientSocket.recv(2048).decode('utf-8')
 print(server_response)

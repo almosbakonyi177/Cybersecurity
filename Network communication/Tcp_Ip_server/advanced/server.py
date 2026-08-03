@@ -1,4 +1,5 @@
 import socket
+import time
 
 dictionary=dict()
 dictionary["Apple"]="Red, shiny"
@@ -20,6 +21,7 @@ while True:
     while True:
         incomingData=client_socket.recv(2048)
         incomingData=incomingData.decode('utf-8')
+        timePeriod=str(time.time()//30)
 
         if not incomingData or incomingData=='END':
             break
@@ -30,7 +32,7 @@ while True:
             # If the client is not authenticated yet,
             # the client should send the password or connection gets closed
 
-            if incomingData=="SECRET":
+            if incomingData==timePeriod:
                 authenticated=True
                 client_socket.sendall(b"Successful authentication")
                 print("Successful authentication")
