@@ -1,5 +1,6 @@
 import socket
 import time
+import hashlib
 
 
 def isConnected(sock:socket.socket)->bool:
@@ -12,9 +13,11 @@ clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print("Connecting to server, type END to exit\n")
 clientSocket.connect(('127.0.0.1', 6500))
 
-timePeriod=time.time()//30
+timePeriod=str(time.time()//30)
+key='A8DF'
+token=hashlib.sha256((timePeriod+key).encode('utf-8')).hexdigest()
 
-clientSocket.sendall(str(timePeriod).encode('utf-8'))
+clientSocket.sendall(token.encode('utf-8'))
 
 server_response = clientSocket.recv(2048).decode('utf-8')
 print(server_response)

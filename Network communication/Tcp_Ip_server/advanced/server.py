@@ -1,5 +1,6 @@
 import socket
 import time
+import hashlib
 
 dictionary=dict()
 dictionary["Apple"]="Red, shiny"
@@ -8,6 +9,8 @@ dictionary["Window"]="Nice, clean"
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 serverSocket.bind(('127.0.0.1', 6500))
+
+key="A8DF"
 
 # Only 2 clients can connect to the server
 serverSocket.listen(2)
@@ -22,6 +25,7 @@ while True:
         incomingData=client_socket.recv(2048)
         incomingData=incomingData.decode('utf-8')
         timePeriod=str(time.time()//30)
+        token=hashlib.sha256((timePeriod+key).encode('utf-8')).hexdigest()
 
         if not incomingData or incomingData=='END':
             break
@@ -32,7 +36,7 @@ while True:
             # If the client is not authenticated yet,
             # the client should send the password or connection gets closed
 
-            if incomingData==timePeriod:
+            if incomingData==token:
                 authenticated=True
                 client_socket.sendall(b"Successful authentication")
                 print("Successful authentication")
