@@ -1,8 +1,9 @@
-from pathlib import Path
 import re
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
+
+import numpy
 
 
 def importFile():
@@ -12,7 +13,6 @@ def importFile():
 
 def readFile(path):
     global file
-    global variables
     try:
         file=open(path, "r")
         filePathLabel.config(text=path)
@@ -20,16 +20,6 @@ def readFile(path):
 
     except Exception as e:
         filePathLabel.config(text=f'Error: {e}')
-
-
-# Finds the last try's time stamp before an upper bound time stamp for an ip
-def findLastTryTime(timeList, upperTimeStamp)->int:
-    timeList=reversed(timeList)
-
-    for timeStamp in timeList:
-        if timeStamp<upperTimeStamp:
-            return timeStamp
-    return None
 
 # Looks for brute force pattern in a timestamps list using sliding window
 def patternAnalyze(timeList)->int:
@@ -50,40 +40,39 @@ def patternAnalyze(timeList)->int:
 
 def mainTask():
     failed_IPs={}
-    counter=0
     global outputText
 
     # First read in the file
     for line in file:
-        parts=line.strip().split(" ")
+        parts=line.strip().split()
         timeStampParts=parts[2].strip().split(":")
         timeStamp=int(timeStampParts[0])*3600+int(timeStampParts[1])*60+int(timeStampParts[2])
-
-        parts[2]=timeStamp
 
         x = re.search('Failed password', line)
 
         if x:
-            failed_IP=parts[10]
+            failed_IP=re.search(r'from (\d+\.\d+\.\d+\.\d+)', line).group(1)
+            day=parts[1]
 
             # Track the failed login attempts for IP addresses
-            failed_IPs[failed_IP]=failed_IPs.get(failed_IP,[])
-            failed_IPs[failed_IP].append(parts[2])
+            failed_IPs[day]=failed_IPs.get(day, {})
+            failed_IPs[day][failed_IP]=failed_IPs[day].get(failed_IP,[])
+            failed_IPs[day][failed_IP].append(timeStamp)
 
 
+    suspicious=set()
 
-    suspicious=[]
+    for day, IP_data in failed_IPs.items():
+        for candidate, timeStamps in IP_data.items():
+        
+            if patternAnalyze(timeStamps):
+                # If there was too many tries in too short time it is suspicious
+                suspicious.add(day+" "+candidate)
 
-    for candidate, timeStamps in failed_IPs.items():
-
-        if patternAnalyze(timeStamps):
-            # If there was too many tries in too short time it is suspicious
-            suspicious.append(candidate)
-
-
-    print("Suspicious login attempts from these IPs:")
-    for ip in suspicious:
-        print(ip)
+        percentile=numpy.percentile(list(len(attempts) for attempts in IP_data.values()), 95)
+        for candidate, attempts in IP_data.items():
+            if len(attempts)>percentile:
+                suspicious.add(day+" "+candidate)
 
     file.close()
     outputText.config(text="\n".join(suspicious))
