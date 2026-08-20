@@ -20,7 +20,7 @@ def readFile(path):
         filePathLabel.config(text=f'Error: {e}')
 
 # Looks for brute force login tries in a timestamps list using sliding window
-def checkBruteForce(timeList)->int:
+def checkBruteForce(timeList)->bool:
     timeList=sorted(timeList)
     windowSize=3600
     threshold=5
@@ -42,6 +42,10 @@ def mainTask():
     # First read in the file
     for line in file:
         parts=line.strip().split()
+        
+        if len(parts)<3:
+            continue
+
         timeStampParts=parts[2].strip().split(":")
         timeStamp=int(timeStampParts[0])*3600+int(timeStampParts[1])*60+int(timeStampParts[2])
 

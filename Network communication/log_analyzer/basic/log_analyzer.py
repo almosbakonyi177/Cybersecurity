@@ -10,8 +10,8 @@ def findLastTryTime(timeList, upperTimeStamp)->int:
             return timeStamp
     return None
 
-# Looks for brute force pattern in a timestamps list using sliding window
-def patternAnalyze(timeList)->int:
+# Looks for brute force login tries in a timestamps list using sliding window
+def checkBruteForce(timeList)->bool:
     timeList=sorted(timeList)
     windowSize=3600
     threshold=5
@@ -24,10 +24,7 @@ def patternAnalyze(timeList)->int:
         if counter>=threshold:
             return True
 
-        
     return False
-
-
 
 
 script_dir=Path(__file__).resolve().parent
@@ -35,33 +32,33 @@ file_path=script_dir / "authentication_log.txt"
 
 file=open(file_path, "r")
 failed_IPs={}
-counter=0
 
 # First read in the file
 for line in file:
     parts=line.strip().split(" ")
+
+    if len(parts)<3:
+        continue
+
     timeStampParts=parts[2].strip().split(":")
     timeStamp=int(timeStampParts[0])*3600+int(timeStampParts[1])*60+int(timeStampParts[2])
-
-    parts[2]=timeStamp
 
     x = re.search('Failed password', line)
 
     if x:
-        failed_IP=parts[10]
+        failed_IP=re.search(r'from (\d+\.\d+\.\d+\.\d+)', line).group(1)
 
         # Track the failed login attempts for IP addresses
         failed_IPs[failed_IP]=failed_IPs.get(failed_IP,[])
-        failed_IPs[failed_IP].append(parts[2])
-
+        failed_IPs[failed_IP].append(timeStamp)
 
 
 suspicious=[]
 
 for candidate, timeStamps in failed_IPs.items():
 
-    if patternAnalyze(timeStamps):
-        # If there was too many tries in too short time it is suspicious
+    if checkBruteForce(timeStamps):
+        # If there was too many tries in 1 hour it is suspicious
         suspicious.append(candidate)
 
 
