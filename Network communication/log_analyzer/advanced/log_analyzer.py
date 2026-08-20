@@ -1,8 +1,6 @@
 import re
 import tkinter as tk
-from tkinter import ttk
 from tkinter import filedialog
-
 import numpy
 
 
@@ -21,8 +19,8 @@ def readFile(path):
     except Exception as e:
         filePathLabel.config(text=f'Error: {e}')
 
-# Looks for brute force pattern in a timestamps list using sliding window
-def patternAnalyze(timeList)->int:
+# Looks for brute force login tries in a timestamps list using sliding window
+def checkBruteForce(timeList)->int:
     timeList=sorted(timeList)
     windowSize=3600
     threshold=5
@@ -34,7 +32,6 @@ def patternAnalyze(timeList)->int:
         counter=right-left+1
         if counter>=threshold:
             return True
-
         
     return False
 
@@ -54,28 +51,33 @@ def mainTask():
             failed_IP=re.search(r'from (\d+\.\d+\.\d+\.\d+)', line).group(1)
             day=parts[1]
 
-            # Track the failed login attempts for IP addresses
+            # Track the failed login attempts
+            # Day->IP->List of timestamps
             failed_IPs[day]=failed_IPs.get(day, {})
             failed_IPs[day][failed_IP]=failed_IPs[day].get(failed_IP,[])
             failed_IPs[day][failed_IP].append(timeStamp)
 
-
+    # Set because we don't want duplicates
     suspicious=set()
 
+    # Go through on each day's failed IPs
     for day, IP_data in failed_IPs.items():
-        for candidate, timeStamps in IP_data.items():
+        # Go through on each IP's timestamps
+        for IP_addess, timeStamps in IP_data.items():
         
-            if patternAnalyze(timeStamps):
-                # If there was too many tries in too short time it is suspicious
-                suspicious.add(day+" "+candidate)
+            if checkBruteForce(timeStamps):
+                # If there was too many tries in 1 hour it is suspicious(brute force)
+                suspicious.add(day+"\t: "+IP_addess+" (Brute force)")
 
+        # Calculate the 95th percentile of failed login attempts for the day
         percentile=numpy.percentile(list(len(attempts) for attempts in IP_data.values()), 95)
-        for candidate, attempts in IP_data.items():
+        for IP_addess, attempts in IP_data.items():
             if len(attempts)>percentile:
-                suspicious.add(day+" "+candidate)
+                suspicious.add(day+"\t: "+IP_addess+" (Above 95th percentile)")
 
     file.close()
-    outputText.config(text="\n".join(suspicious))
+    suspicious=sorted(suspicious)
+    outputText.config(text="\n".join(suspicious), font=('Consolas', 11), justify='left', anchor='nw')
     return suspicious
 
 window=tk.Tk()
